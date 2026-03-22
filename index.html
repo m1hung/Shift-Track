@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shift Track</title>
+<style>
+/* CSS Variables for Modern Theme */
+:root {
+  --bg-main: #09090b;
+  --bg-card: #18181b;
+  --bg-input: #09090b;
+  --bg-hover: #27272a;
+  
+  --border-light: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(139, 92, 246, 0.5);
+  
+  --text-main: #f4f4f5;
+  --text-muted: #a1a1aa;
+  
+  --primary: #8b5cf6;
+  --primary-hover: #7c3aed;
+  --primary-glow: rgba(139, 92, 246, 0.25);
+  
+  --success: #10b981;
+  --success-bg: rgba(16, 185, 129, 0.15);
+  --danger: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.15);
+  --warning: #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.15);
+  --info: #3b82f6;
+  --info-bg: rgba(59, 130, 246, 0.15);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Icon Resizing Utility */
+svg { width: 1em; height: 1em; }
+.icon-inline { display: inline-flex; align-items: center; gap: 6px; }
+
+/* Glassmorphism Header */
+header {
+  background: rgba(24, 24, 27, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-light);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary);
+}
+
+header h1 span {
+  background: linear-gradient(135deg, #a78bfa, var(--primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+
+header .date-text { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+
+/* Sticky Tabs */
+.tabs {
+  display: flex;
+  background: rgba(24, 24, 27, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-light);
+  position: sticky;
+  top: 60px;
+  z-index: 99;
+  padding: 0 8px;
+}
+
+.tab {
+  flex: 1;
+  padding: 14px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 0 4px;
+  border-radius: 6px 6px 0 0;
+}
+
+.tab:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.03); }
+
+.tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  background: linear-gradient(to top, rgba(139, 92, 246, 0.1) 0%, transparent 100%);
+}
+
+.tab-icon { 
+  display: flex; 
+  font-size: 20px; 
+  margin-bottom: 4px; 
+  opacity: 0.7; 
+  transition: all 0.3s; 
+}
+.tab.active .tab-icon { opacity: 1; transform: scale(1.1); }
+
+/* Main Pages */
+.page { display: none; padding: 20px 16px; max-width: 640px; margin: 0 auto; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Cards */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.3);
+}
+
+.card-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+}
+
+/* Forms & Inputs */
+input, select, textarea {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  color: var(--text-main);
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+input::placeholder, textarea::placeholder { color: #52525b; }
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+select option { background: var(--bg-card); }
+
+/* Buttons */
+.btn {
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn:active { transform: scale(0.98); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: #fff;
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.btn-danger:hover { background: rgba(239, 68, 68, 0.25); }
+
+.btn-sm { width: auto; padding: 6px 12px; font-size: 12px; border-radius: var(--radius-sm); }
+
+/* Soft App Badges */
+.status-badge, .health-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.s-inuse, .h-inuse { background: var(--info-bg); color: var(--info); border: 1px solid rgba(59, 130, 246, 0.2); }
+.s-avail, .h-healthy { background: var(--success-bg); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+.s-repair, .h-unhealthy { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2); }
+
+/* Lists & Rows */
+.eq-item, .log-entry, .pack-row {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.eq-item:last-child, .log-entry:last-child, .pack-row:last-child { border-bottom: none; }
+
+.eq-item { display: flex; align-items: center; justify-content: space-between; }
+.eq-name { font-size: 15px; font-weight: 600; }
+.eq-meta { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+.eq-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+
+/* Log Entries */
+.log-entry { display: flex; gap: 14px; align-items: flex-start; }
+.log-time { font-size: 12px; color: var(--primary); font-weight: 700; min-width: 56px; padding-top: 2px; }
+.log-body { flex: 1; }
+.log-cat { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; }
+.log-text { font-size: 14px; color: #d4d4d8; line-height: 1.5; }
+
+.eq-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 3px 10px;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+/* Colors for Log Categories */
+.c-task { color: var(--success); }
+.c-incident { color: var(--danger); }
+.c-note { color: var(--text-muted); }
+.c-handoff { color: var(--primary); }
+.c-equipment { color: var(--warning); }
+
+/* Pack Rows */
+.pack-row { display: flex; align-items: center; justify-content: space-between; }
+.pack-info { flex: 1; }
+.pack-name { font-size: 14px; font-weight: 600; }
+.pack-id { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.pack-right { display: flex; align-items: center; gap: 10px; }
+.pack-right select { margin: 0; padding: 6px 28px 6px 10px; height: auto; font-size: 12px; width: auto; background-color: var(--bg-hover); }
+
+/* Output & Empty States */
+.sum-box {
+  background: #000;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid var(--border-light);
+  font-size: 13px;
+  color: #a1a1aa;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  min-height: 80px;
+  white-space: pre-wrap;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+.empty { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; }
+.empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.3; }
+
+.del-btn {
+  background: var(--bg-hover);
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.del-btn:hover { color: var(--danger); background: var(--danger-bg); border-color: rgba(239, 68, 68, 0.3); }
+
+/* Utility */
+.date-lbl { font-size: 12px; color: var(--primary); font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.row { display: flex; gap: 12px; }
+.row > * { flex: 1; }
+
+.shift-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border-light); }
+.shift-row:last-child { border-bottom: none; }
+.shift-row span { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+.shift-row strong { font-size: 14px; font-weight: 600; }
+
+.copy-btn {
+  background: var(--bg-hover);
+  border: 1px solid var(--border-light);
+  color: var(--text-main);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  width: 100%;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 8px;
+  transition: all 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.copy-btn:hover { border-color: var(--primary); color: var(--primary); background: rgba(139, 92, 246, 0.05); }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--text-main);
+  color: var(--bg-main);
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  pointer-events: none;
+  z-index: 999;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Specific Areas */
+.sec-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.sec-hdr .card-title { margin-bottom: 0; }
+
+.eq-sel-wrap { display: none; background: var(--warning-bg); padding: 12px; border-radius: var(--radius-md); border: 1px solid rgba(245, 158, 11, 0.2); margin-bottom: 12px; }
+.eq-sel-wrap.on { display: block; animation: fadeIn 0.3s ease; }
+.eq-sel-wrap select { margin-bottom: 0; border-color: rgba(245, 158, 11, 0.3); }
+.eq-sel-lbl { font-size: 12px; color: var(--warning); font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+
+.field-lbl { font-size: 12px; color: var(--text-main); font-weight: 600; margin-bottom: 6px; margin-top: 4px; }
+.hint { font-size: 12px; color: var(--text-muted); margin-top: -6px; margin-bottom: 14px; line-height: 1.4; }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-main); }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* SVG Icon Base CSS */
+.svg-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>
+    <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+    <span>Shift Track</span>
+  </h1>
+  <span id="hdrDate" class="date-text"></span>
+</header>
+<div class="tabs">
+  <div class="tab active" id="tab-equipment" onclick="go('equipment')">
+    <div class="tab-icon"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg></div>
+    Equipment
+  </div>
+  <div class="tab" id="tab-log" onclick="go('log')">
+    <div class="tab-icon"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><line x1="9" y1="14" x2="15" y2="14"></line><line x1="9" y1="18" x2="15" y2="18"></line><line x1="9" y1="10" x2="15" y2="10"></line></svg></div>
+    Day Log
+  </div>
+  <div class="tab" id="tab-summary" onclick="go('summary')">
+    <div class="tab-icon"><svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
+    Summary
+  </div>
+</div>
+
+<div class="page active" id="page-equipment">
+  <div class="card">
+    <div class="card-title">Add Equipment</div>
+    <input id="eqName" type="text" placeholder="Equipment Type (e.g. Pack)">
+    <input id="eqTag" type="text" placeholder="ID (e.g. 420)">
+    <input id="eqNote" type="text" placeholder="Note (e.g. ultrasonic)">
+    <div class="hint">All equipment starts as In Use. Change status in the Summary tab.</div>
+    <button class="btn btn-primary" onclick="addEq()">+ Add Equipment</button>
+  </div>
+  <div class="card">
+    <div class="sec-hdr">
+      <div class="card-title">Equipment List</div>
+      <span id="eqCount" style="font-size:12px;color:var(--text-muted);font-weight:600"></span>
+    </div>
+    <div id="eqList"></div>
+  </div>
+</div>
+
+<div class="page" id="page-log">
+  <div class="card">
+    <div class="card-title">Log an Event</div>
+    <select id="logCat" onchange="onCatChange()">
+      <option value="task">Task Completed</option>
+      <option value="incident">Incident</option>
+      <option value="note">General Note</option>
+      <option value="handoff">Team Handoff</option>
+      <option value="equipment">Equipment Issue</option>
+    </select>
+    <div class="eq-sel-wrap" id="eqSelWrap">
+      <div class="eq-sel-lbl">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+        Which equipment had the issue?
+      </div>
+      <select id="eqSelLog"><option value="">Select equipment...</option></select>
+    </div>
+    <textarea id="logText" placeholder="What happened? Be specific..."></textarea>
+    <button class="btn btn-primary" onclick="addLog()">+ Log Event</button>
+  </div>
+  <div class="card">
+    <div class="sec-hdr">
+      <div class="card-title">Today's Timeline</div>
+      <button class="btn btn-sm btn-danger" onclick="clearLogs()">Clear All</button>
+    </div>
+    <div class="date-lbl" id="logDateLbl"></div>
+    <div id="logList"></div>
+  </div>
+</div>
+
+<div class="page" id="page-summary">
+  <div class="card">
+    <div class="card-title">Report Fields</div>
+    <div class="field-lbl">Location</div>
+    <input id="rLocation" type="text" placeholder="e.g. Site A, Building 3">
+    <div class="field-lbl">Sublocation</div>
+    <input id="rSublocation" type="text" placeholder="e.g. North Wing, Floor 2">
+    <div class="field-lbl">Total Downtime</div>
+    <input id="rDowntime" type="text" placeholder="e.g. 1hr 30min, None">
+  </div>
+  <div class="card">
+    <div class="card-title">Pack Statuses</div>
+    <div class="hint" style="margin-bottom:12px">Change each pack to Available (Healthy) or Needs Repair (Unhealthy).</div>
+    <div id="packStatusList"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Shift Info</div>
+    <div class="shift-row"><span>Date</span><strong id="sDate"></strong></div>
+    <div class="shift-row"><span>Logged Events</span><strong id="sEvents">0</strong></div>
+    <div class="shift-row"><span>Equipment Tracked</span><strong id="sEquip">0</strong></div>
+    <div class="shift-row"><span>Issues Flagged</span><strong id="sIssues">0</strong></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Auto-Generated Summary</div>
+    <div class="sum-box" id="sumText">Fill in Report Fields, update Pack Statuses, then tap Generate Summary.</div>
+    <button class="btn btn-primary" onclick="genSummary()">
+      <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+      Generate Summary
+    </button>
+    <button class="copy-btn" onclick="copySummary()">
+      <svg class="svg-icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+      Copy to Clipboard
+    </button>
+  </div>
+  <div class="card">
+    <div class="card-title">Full Event Log</div>
+    <div id="sLogList"></div>
+  </div>
+</div>
+<div class="toast" id="toastEl"></div>
+
+<script>
+// SVG HTML Strings for JS Injection
+const iconEq = '<svg class="svg-icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>';
+const iconLog = '<svg class="svg-icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><line x1="9" y1="14" x2="15" y2="14"></line><line x1="9" y1="18" x2="15" y2="18"></line><line x1="9" y1="10" x2="15" y2="10"></line></svg>';
+const iconWrench = '<svg class="svg-icon" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>';
+const iconTrash = '<svg class="svg-icon" width="14" height="14" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+const iconX = '<svg class="svg-icon" width="12" height="12" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+
+function todayKey(){return new Date().toISOString().split("T")[0];}
+function loadEq(){return JSON.parse(localStorage.getItem("st_eq")||"[]");}
+function loadLogs(){return JSON.parse(localStorage.getItem("st_logs_"+todayKey())||"[]");}
+function saveEq(d){localStorage.setItem("st_eq",JSON.stringify(d));}
+function saveLogs(d){localStorage.setItem("st_logs_"+todayKey(),JSON.stringify(d));}
+
+function toast(m){
+  var t=document.getElementById("toastEl");
+  t.textContent=m;t.classList.add("show");
+  setTimeout(function(){t.classList.remove("show");},2500);
+}
+
+function fmt(ts){return new Date(ts).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});}
+
+function statusBadge(s){
+  if(s==="available") return '<span class="status-badge s-avail">Available</span>';
+  if(s==="repair") return '<span class="status-badge s-repair">Needs Repair</span>';
+  return '<span class="status-badge s-inuse">In Use</span>';
+}
+
+function healthBadge(s){
+  if(s==="repair") return '<span class="health-badge h-unhealthy">Unhealthy</span>';
+  if(s==="available") return '<span class="health-badge h-healthy">Healthy</span>';
+  return '<span class="health-badge h-inuse">In Use</span>';
+}
+
+function catCls(c){
+  var m={task:"c-task",incident:"c-incident",note:"c-note",handoff:"c-handoff",equipment:"c-equipment"};
+  return m[c]||"c-note";
+}
+function catName(c){
+  var m={task:"Task",incident:"Incident",note:"Note",handoff:"Handoff",equipment:"Equipment Issue"};
+  return m[c]||c;
+}
+
+function go(tab){
+  ["equipment","log","summary"].forEach(function(t){
+    document.getElementById("tab-"+t).classList.toggle("active",t===tab);
+    document.getElementById("page-"+t).classList.toggle("active",t===tab);
+  });
+  if(tab==="summary")renderSummary();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function onCatChange(){
+  var v=document.getElementById("logCat").value;
+  var w=document.getElementById("eqSelWrap");
+  if(v==="equipment"){w.classList.add("on");fillEqSel();}
+  else{w.classList.remove("on");}
+}
+
+function fillEqSel(){
+  var eq=loadEq();
+  var sel=document.getElementById("eqSelLog");
+  sel.innerHTML='<option value="">Select equipment...</option>';
+  if(!eq.length){sel.innerHTML+='<option disabled>No equipment added yet</option>';}
+  else{eq.forEach(function(e){sel.innerHTML+='<option value="'+e.id+'">'+(e.tag?e.tag+" - ":"")+e.name+"</option>";});}
+}
+
+function addEq(){
+  var name=document.getElementById("eqName").value.trim();
+  if(!name){toast("Enter equipment name");return;}
+  var eq=loadEq();
+  eq.push({id:Date.now(),name:name,tag:document.getElementById("eqTag").value.trim(),status:"in-use",note:document.getElementById("eqNote").value.trim()});
+  saveEq(eq);
+  document.getElementById("eqName").value="";
+  document.getElementById("eqTag").value="";
+  document.getElementById("eqNote").value="";
+  renderEq();toast("Equipment added!");
+}
+
+function delEq(id){
+  saveEq(loadEq().filter(function(e){return e.id!==id;}));
+  renderEq();toast("Removed");
+}
+
+function renderEq(){
+  var eq=loadEq();
+  var el=document.getElementById("eqList");
+  document.getElementById("eqCount").textContent=eq.length+" items";
+  if(!eq.length){el.innerHTML='<div class="empty"><div class="empty-icon">'+iconEq+'</div>No equipment added yet</div>';return;}
+  var html="";
+  eq.forEach(function(e){
+    var tagStr=e.tag?' <span style="color:var(--text-muted);font-size:12px;font-weight:500;">['+e.tag+"]</span>":"";
+    html+='<div class="eq-item">';
+    html+='<div><div class="eq-name">'+e.name+tagStr+"</div>";
+    html+='<div class="eq-meta">'+(e.note||"No notes")+"</div></div>";
+    html+='<div class="eq-right">'+statusBadge(e.status);
+    html+='<button class="del-btn" onclick="delEq('+e.id+')">'+iconTrash+'</button>';
+    html+="</div></div>";
+  });
+  el.innerHTML=html;
+}
+
+// Status change only from Summary tab
+function setStatus(id,val){
+  var eq=loadEq().map(function(e){return e.id===id?Object.assign({},e,{status:val}):e;});
+  saveEq(eq);
+  renderPackList();
+  toast("Status updated");
+}
+
+function renderPackList(){
+  var eq=loadEq();
+  var el=document.getElementById("packStatusList");
+  if(!eq.length){el.innerHTML='<div class="empty" style="padding:16px">No equipment tracked</div>';return;}
+  var html="";
+  eq.forEach(function(e){
+    var id=e.tag||"--";
+    html+='<div class="pack-row">';
+    html+='<div class="pack-info"><div class="pack-name">'+e.name+"</div>";
+    html+='<div class="pack-id">Pack ID: '+id+"</div></div>";
+    html+='<div class="pack-right">'+healthBadge(e.status);
+    html+='<select onchange="setStatus('+e.id+',this.value)">';
+    html+='<option value="in-use"'+(e.status==="in-use"?" selected":"")+'>'+"In Use</option>";
+    html+='<option value="available"'+(e.status==="available"?" selected":"")+'>'+"Available</option>";
+    html+='<option value="repair"'+(e.status==="repair"?" selected":"")+'>'+"Needs Repair</option>";
+    html+="</select></div></div>";
+  });
+  el.innerHTML=html;
+}
+
+function addLog(){
+  var text=document.getElementById("logText").value.trim();
+  var cat=document.getElementById("logCat").value;
+  if(!text){toast("Enter event description");return;}
+  var linked=null;
+  if(cat==="equipment"){
+    var sid=document.getElementById("eqSelLog").value;
+    if(sid){
+      var match=loadEq().filter(function(e){return String(e.id)===String(sid);});
+      if(match.length){linked={id:match[0].id,name:match[0].name,tag:match[0].tag};}
+    }
+  }
+  var logs=loadLogs();
+  logs.push({id:Date.now(),ts:Date.now(),cat:cat,text:text,eq:linked});
+  saveLogs(logs);
+  document.getElementById("logText").value="";
+  document.getElementById("logCat").value="task";
+  document.getElementById("eqSelWrap").classList.remove("on");
+  renderLogs();toast("Event logged!");
+}
+
+function delLog(id){
+  saveLogs(loadLogs().filter(function(l){return l.id!==id;}));
+  renderLogs();toast("Removed");
+}
+
+function clearLogs(){
+  if(!confirm("Clear all events for today?"))return;
+  saveLogs([]);renderLogs();toast("Log cleared");
+}
+
+function entryHTML(l,showDel){
+  var eqTag=l.eq?'<div><span class="eq-tag">'+iconWrench+' '+l.eq.name+(l.eq.tag?" ["+l.eq.tag+"]":"")+"</span></div>":"";
+  var del=showDel?'<button class="del-btn" onclick="delLog('+l.id+')">'+iconX+'</button>':"";
+  return'<div class="log-entry"><div class="log-time">'+fmt(l.ts)+'</div><div class="log-body"><div class="log-cat '+catCls(l.cat)+'">'+catName(l.cat)+"</div>"+eqTag+'<div class="log-text">'+l.text+"</div></div>"+del+"</div>";
+}
+
+function renderLogs(){
+  var logs=loadLogs();
+  var el=document.getElementById("logList");
+  document.getElementById("logDateLbl").textContent=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+  if(!logs.length){el.innerHTML='<div class="empty"><div class="empty-icon">'+iconLog+'</div>No events logged yet today</div>';return;}
+  var html="";
+  logs.slice().reverse().forEach(function(l){html+=entryHTML(l,true);});
+  el.innerHTML=html;
+}
+
+function genSummary(){
+  var eq=loadEq();
+  var logs=loadLogs();
+  var location=document.getElementById("rLocation").value.trim()||"[Location]";
+  var sublocation=document.getElementById("rSublocation").value.trim()||"[Sublocation]";
+  var date=new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+
+  var egos=eq.filter(function(e){return e.name.toLowerCase().indexOf("helmet")!==-1;});
+  var egoStr=egos.length?egos.map(function(e){return e.tag||e.name;}).join(", "):"N/A";
+
+  var minis=eq.filter(function(e){return e.name.toLowerCase().indexOf("miniframe")!==-1;});
+  var miniStr=minis.length?minis.map(function(e){return e.tag||e.name;}).join(", "):"N/A";
+
+  var lidars=eq.filter(function(e){return e.note&&e.note.toLowerCase().indexOf("lidar")!==-1;});
+  var lidarStr=lidars.length?lidars.map(function(e){return e.tag||e.name;}).join(", "):"N/A";
+
+  var packLines="";
+  if(eq.length){
+    eq.forEach(function(e){
+      var health=e.status==="repair"?"Unhealthy":"Healthy";
+      var id=e.tag||"--";
+      packLines+=id+" "+health+" > "+e.name+"\n";
+    });
+  } else {
+    packLines="No equipment tracked\n";
+  }
+
+  var notesStr=logs.length?logs.map(function(l){return "\u2022 ["+fmt(l.ts)+"] ("+catName(l.cat)+") "+l.text+(l.eq?" ["+l.eq.name+(l.eq.tag?" "+l.eq.tag:"")+"]":"");}).join("\n"):"";
+
+  var s=location+" "+date+"\n\n";
+  s+="Ego(s): "+egoStr+"\n";
+  s+="Miniframe(s): "+miniStr+"\n";
+  s+="Lidar: "+lidarStr+"\n\n";
+  s+="Group's Pack Statuses:\n\n";
+  s+=packLines+"\n";
+  s+=sublocation+"\n\n";
+  s+="Notes:\n"+notesStr+"\n\n";
+  var downtime=document.getElementById("rDowntime").value.trim()||"";
+  s+="Total Downtime: "+downtime+"\n\n";
+  s+="CC:";
+
+  document.getElementById("sumText").textContent=s;
+  toast("Summary generated!");
+}
+
+function copySummary(){
+  var text=document.getElementById("sumText").textContent;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(function(){toast("Copied!");}).catch(function(){toast("Select and copy manually");});
+  } else {toast("Select and copy manually");}
+}
+
+function renderSummary(){
+  var logs=loadLogs();var eq=loadEq();
+  document.getElementById("sDate").textContent=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+  document.getElementById("sEvents").textContent=logs.length;
+  document.getElementById("sEquip").textContent=eq.length;
+  document.getElementById("sIssues").textContent=logs.filter(function(l){return l.cat==="incident"||l.cat==="equipment";}).length;
+  renderPackList();
+  var sl=document.getElementById("sLogList");
+  if(!logs.length){sl.innerHTML='<div class="empty" style="padding:16px">No events to show</div>';return;}
+  var html="";
+  logs.forEach(function(l){html+=entryHTML(l,false);});
+  sl.innerHTML=html;
+}
+
+document.getElementById("hdrDate").textContent=new Date().toLocaleDateString("en-US",{month:"short",day:"numeric"});
+renderEq();renderLogs();
+</script>
+</body>
+</html>
